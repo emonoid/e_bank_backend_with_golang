@@ -13,4 +13,7 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5454/islami_bank?sslmode=disable" -verbose down
 
+sqlc:
+	sqlc generate
+
 .PHONY: createdb dropdb postgres16 migrateup migratedown
