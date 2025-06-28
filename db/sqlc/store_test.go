@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTransferTrxn(t *testing.T){
+func TestTransferTrxn(t *testing.T) {
 	store := NewStore(testConn)
 
 	account1 := createTestAccount(t)
@@ -21,9 +21,9 @@ func TestTransferTrxn(t *testing.T){
 	errs := make(chan error)
 	results := make(chan TransferTrxnResult)
 
-	for i:=0; i<n; i++{
-		go func ()  {
-			result, err := store.TransferTrnx(context.Background(), TransferTrxnParams{
+	for i := 0; i < n; i++ {
+		go func() {
+			result, err := store.TransferTrxn(context.Background(), TransferTrxnParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -36,11 +36,11 @@ func TestTransferTrxn(t *testing.T){
 
 	// check results from channels
 	for i := 0; i < n; i++ {
-		err:= <-errs
+		err := <-errs
 		require.NoError(t, err)
 
 		result := <-results
-		
+
 		// check the transfer result
 		transfer := result.Transfer
 		require.NotEmpty(t, transfer)

@@ -60,10 +60,10 @@ type TransferTrxnResult struct {
 	ToEntry     Entry    `json: to_entry`
 }
 
-// TransferTrnx performs a money transfer between two accounts.
+// TransferTrxn performs a money transfer between two accounts.
 // It uses a transaction to ensure atomicity, meaning either both operations succeed or none do.
 // It creates a transfer record, updates the account balances, and creates entries for both accounts.
-func (store *Store) TransferTrnx(ctx context.Context, arg TransferTrxnParams) (TransferTrxnResult, error) {
+func (store *Store) TransferTrxn(ctx context.Context, arg TransferTrxnParams) (TransferTrxnResult, error) {
 	var result TransferTrxnResult
 
 	err := store.execTrxn(ctx, func(q *Queries) error {
