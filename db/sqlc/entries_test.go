@@ -2,24 +2,18 @@ package db
 
 import (
 	"context"
-	"testing"
-	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"testing" 
+ 
 	"github.com/stretchr/testify/require"
 )
 
 
 func createTestEntry(t *testing.T) Entry {
-	account := createTestAccount(t)
-
-	createdAt := pgtype.Timestamptz{}
-	_ = createdAt.Scan(time.Now())
+	account := createTestAccount(t) 
 
 	arg := CreateEntryParams{
 		AccountID: account.ID,
-		Amount: 1000,
-		CreatedAt: createdAt,
+		Amount: 1000, 
 	}
 
 	entry, err := testQueries.CreateEntry(context.Background(), arg)

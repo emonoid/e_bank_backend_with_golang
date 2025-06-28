@@ -7,8 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createEntry = `-- name: CreateEntry :one
@@ -26,11 +25,11 @@ RETURNING id, account_id, amount, created_at
 type CreateEntryParams struct {
 	AccountID int64
 	Amount    int64
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
-	row := q.db.QueryRow(ctx, createEntry, arg.AccountID, arg.Amount, arg.CreatedAt)
+	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Amount, arg.CreatedAt)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
@@ -48,7 +47,7 @@ RETURNING id, account_id, amount, created_at
 `
 
 func (q *Queries) DeleteEntry(ctx context.Context, id int64) (Entry, error) {
-	row := q.db.QueryRow(ctx, deleteEntry, id)
+	row := q.db.QueryRowContext(ctx, deleteEntry, id)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
@@ -65,7 +64,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
-	row := q.db.QueryRow(ctx, getEntry, id)
+	row := q.db.QueryRowContext(ctx, getEntry, id)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
@@ -88,7 +87,7 @@ type ListEntryParams struct {
 }
 
 func (q *Queries) ListEntry(ctx context.Context, arg ListEntryParams) ([]Entry, error) {
-	rows, err := q.db.Query(ctx, listEntry, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listEntry, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +104,9 @@ func (q *Queries) ListEntry(ctx context.Context, arg ListEntryParams) ([]Entry, 
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -127,7 +129,7 @@ type UpdateEntryParams struct {
 }
 
 func (q *Queries) UpdateEntry(ctx context.Context, arg UpdateEntryParams) (Entry, error) {
-	row := q.db.QueryRow(ctx, updateEntry, arg.ID, arg.AccountID, arg.Amount)
+	row := q.db.QueryRowContext(ctx, updateEntry, arg.ID, arg.AccountID, arg.Amount)
 	var i Entry
 	err := row.Scan(
 		&i.ID,

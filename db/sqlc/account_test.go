@@ -18,8 +18,7 @@ func createTestAccount(t *testing.T) Account {
 	arg := CreateAccountParams{ 
 		OwnerName: "Al Sahriar",
 		Balance:   12300000,
-		Currency:  "BDT",
-		CreatedAt: createdAt,
+		Currency:  "BDT", 
 	}
 
 	account, err := testQueries.CreateAccount(context.Background(), arg)

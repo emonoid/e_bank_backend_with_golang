@@ -7,8 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -28,11 +27,11 @@ type CreateAccountParams struct {
 	OwnerName string
 	Balance   int64
 	Currency  string
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, createAccount,
+	row := q.db.QueryRowContext(ctx, createAccount,
 		arg.OwnerName,
 		arg.Balance,
 		arg.Currency,
@@ -56,7 +55,7 @@ RETURNING id, owner_name, balance, currency, created_at
 `
 
 func (q *Queries) DeleteAccount(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRow(ctx, deleteAccount, id)
+	row := q.db.QueryRowContext(ctx, deleteAccount, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -74,7 +73,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRow(ctx, getAccount, id)
+	row := q.db.QueryRowContext(ctx, getAccount, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -98,7 +97,7 @@ type ListAccountsParams struct {
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.Query(ctx, listAccounts, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +115,9 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -140,7 +142,7 @@ type UpdateAccountParams struct {
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, updateAccount,
+	row := q.db.QueryRowContext(ctx, updateAccount,
 		arg.ID,
 		arg.OwnerName,
 		arg.Balance,

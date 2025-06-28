@@ -2,10 +2,7 @@ package db
 
 import (
 	"context"
-	"testing"
-	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"testing" 
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,15 +10,12 @@ import (
 func createTestTransfer(t *testing.T) Transfer {
 	fromAccount := createTestAccount(t)
 	toAccount := createTestAccount(t)
-
-	createdAt := pgtype.Timestamptz{}
-	_ = createdAt.Scan(time.Now())
+ 
 
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
 		ToAccountID:  toAccount.ID,
-		Amount: 1000, 
-		CreatedAt: createdAt,
+		Amount: 1000,  
 	}
 
 	transfer, err := testQueries.CreateTransfer(context.Background(), arg)

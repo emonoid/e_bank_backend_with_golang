@@ -1,12 +1,12 @@
 package db
 
 import (
-	"context" 
+	"context"
+	"database/sql"
 	"log"
 	"os"
 	"testing"
-
-	"github.com/jackc/pgx/v5"
+ 
 
 	_ "github.com/lib/pq"
 )
@@ -16,14 +16,12 @@ const (
 	dbSource = "postgresql://root:secret@localhost:5454/islami_bank?sslmode=disable"
 )
 
-
 var testQueries *Queries
+var testConn *sql.DB
 
-
-func TestMain(m *testing.M){
+func TestMain(m *testing.M){ 
 	var err error
-	var testConn *pgx.Conn
-	testConn, err = pgx.Connect(context.Background(), dbSource)
+	testConn, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
@@ -32,9 +30,9 @@ func TestMain(m *testing.M){
 	testQueries = New(testConn)
 
 	    // Cleanup before test run
-	testQueries.db.Exec(context.Background(), "DELETE FROM accounts")
-	testQueries.db.Exec(context.Background(), "DELETE FROM entries")
-	testQueries.db.Exec(context.Background(), "DELETE FROM transfers")
+	testQueries.db.ExecContext(context.Background(), "DELETE FROM accounts")
+	testQueries.db.ExecContext(context.Background(), "DELETE FROM entries")
+	testQueries.db.ExecContext(context.Background(), "DELETE FROM transfers")
 	
 	os.Exit(m.Run())
 }
