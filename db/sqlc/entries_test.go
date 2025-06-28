@@ -16,7 +16,7 @@ func createTestEntry(t *testing.T) Entry {
 	createdAt := pgtype.Timestamptz{}
 	_ = createdAt.Scan(time.Now())
 
-	arg := CreateEntryParams{ 
+	arg := CreateEntryParams{
 		AccountID: account.ID,
 		Amount: 1000,
 		CreatedAt: createdAt,
@@ -74,7 +74,7 @@ func TestDeleteEntry(t *testing.T) {
 	require.Equal(t, entry1.AccountID, entry2.AccountID)
 	require.Equal(t, entry1.Amount, entry2.Amount) 
 
-	// Check if the account is deleted
+	// Check if the entry is deleted
 	_, err = testQueries.GetEntry(context.Background(), entry2.ID)
 	require.Error(t, err)
 }
