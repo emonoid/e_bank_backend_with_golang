@@ -71,6 +71,10 @@ func TestTransferTrxn(t *testing.T){
 		require.NotZero(t, toEntry.CreatedAt)
 		_, err = store.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
+
+		// check accounts
+		// TODO: check account balances
+		// ...
 	}
 
 }
