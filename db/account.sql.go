@@ -13,19 +13,18 @@ import (
 
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (
-  id,
+  -- id,
   owner_name,
   balance,
   currency,
   created_at
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4
 )
 RETURNING id, owner_name, balance, currency, created_at
 `
 
 type CreateAccountParams struct {
-	ID        int64
 	OwnerName string
 	Balance   int64
 	Currency  string
@@ -34,7 +33,6 @@ type CreateAccountParams struct {
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
 	row := q.db.QueryRow(ctx, createAccount,
-		arg.ID,
 		arg.OwnerName,
 		arg.Balance,
 		arg.Currency,
@@ -91,10 +89,16 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, owner_name, balance, currency, created_at FROM accounts
 ORDER BY id
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
-	rows, err := q.db.Query(ctx, listAccounts)
+type ListAccountsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.db.Query(ctx, listAccounts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +125,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE accounts
-  set id=$1,
-  owner_name = $2,
+  set owner_name = $2,
   balance = $3,
   currency = $4
 WHERE id = $1

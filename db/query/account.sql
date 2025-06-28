@@ -1,12 +1,12 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
-  id,
+  -- id,
   owner_name,
   balance,
   currency,
   created_at
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4
 )
 RETURNING *;
 
@@ -16,12 +16,12 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListAccounts :many
 SELECT * FROM accounts
-ORDER BY id;
+ORDER BY id
+LIMIT $1 OFFSET $2;
 
 -- name: UpdateAccount :one
 UPDATE accounts
-  set id=$1,
-  owner_name = $2,
+  set owner_name = $2,
   balance = $3,
   currency = $4
 WHERE id = $1

@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAccount(t *testing.T, id int64) Account {
+
+func createTestAccount(t *testing.T) Account {
 
 	createdAt := pgtype.Timestamptz{}
 	_ = createdAt.Scan(time.Now())
 
-	arg := CreateAccountParams{
-		ID: id,
+	arg := CreateAccountParams{ 
 		OwnerName: "Al Sahriar",
 		Balance:   12300000,
 		Currency:  "BDT",
@@ -35,11 +35,11 @@ func createTestAccount(t *testing.T, id int64) Account {
 }
 
 func TestCreateAccount(t *testing.T) {
-	createTestAccount(t, 15)
+	createTestAccount(t)
 }
 
 func TestGetAccount(t *testing.T) {
-	account1 := createTestAccount(t, 16)
+	account1 := createTestAccount(t)
 
 	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	account1 := createTestAccount(t, 17)
+	account1 := createTestAccount(t)
 
 	arg := UpdateAccountParams{ 
 		ID: account1.ID,
@@ -70,7 +70,7 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	account1 := createTestAccount(t, 18)
+	account1 := createTestAccount(t)
 
 	account2, err := testQueries.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
@@ -81,6 +81,24 @@ func TestDeleteAccount(t *testing.T) {
 	require.Equal(t, account1.Currency, account2.Currency)
 
 	// Check if the account is deleted
-	_, err = testQueries.GetAccount(context.Background(), account1.ID)
+	_, err = testQueries.GetAccount(context.Background(), account1.ID) 
 	require.Error(t, err)
+}
+
+func TestListAccounts(t *testing.T) {
+	arg := ListAccountsParams{
+		Limit:  3,
+		Offset: 0,
+	}
+
+	accounts, err := testQueries.ListAccounts(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+	require.Len(t, accounts, 3)
+
+	for _, account := range accounts {
+		require.NotEmpty(t, account.OwnerName)
+		require.NotEmpty(t, account.Balance)
+		require.NotEmpty(t, account.Currency)
+	}
 }

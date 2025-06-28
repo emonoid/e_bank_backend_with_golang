@@ -28,6 +28,13 @@ func TestMain(m *testing.M){
 		log.Fatal("cannot connect to db:", err)
 	}
 
+
 	testQueries = New(testConn)
+
+	    // Cleanup before test run
+	testQueries.db.Exec(context.Background(), "DELETE FROM accounts")
+	testQueries.db.Exec(context.Background(), "DELETE FROM entries")
+	testQueries.db.Exec(context.Background(), "DELETE FROM transfers")
+	
 	os.Exit(m.Run())
 }
