@@ -1,11 +1,12 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
+  id,
   owner_name,
   balance,
   currency,
   created_at
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 
@@ -17,13 +18,16 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM accounts
 ORDER BY id;
 
--- name: UpdateAccount :exec
+-- name: UpdateAccount :one
 UPDATE accounts
-  set owner_name = $1,
-  balance = $2,
-  currency = $3
-WHERE id = $1;
+  set id=$1,
+  owner_name = $2,
+  balance = $3,
+  currency = $4
+WHERE id = $1
+RETURNING *;
 
--- name: DeleteAccount :exec
+-- name: DeleteAccount :one
 DELETE FROM accounts
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
