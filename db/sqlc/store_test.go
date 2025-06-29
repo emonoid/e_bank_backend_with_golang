@@ -1,8 +1,7 @@
 package db
 
 import (
-	"context"
-	"fmt"
+	"context" 
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,8 +12,7 @@ func TestTransferTrxn(t *testing.T) {
 
 	account1 := createTestAccount(t)
 	account2 := createTestAccount(t)
-
-	fmt.Println(">> before transfer ", account1.Balance, account2.Balance)
+ 
 
 	// run concurrent transfers
 	n := 2
@@ -85,8 +83,7 @@ func TestTransferTrxn(t *testing.T) {
 		require.NotEmpty(t, toAccount)
 		require.Equal(t, account2.ID, toAccount.ID)
 
-		// check account balances
-		fmt.Println(">> trxn ", account1.Balance, account2.Balance)
+		// check account balances 
 
 		diff1 := account1.Balance - fromAccount.Balance
 		diff2 := toAccount.Balance - account2.Balance
@@ -107,8 +104,7 @@ func TestTransferTrxn(t *testing.T) {
 
 	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err)
-
-	fmt.Println(">> after transfer ", account1.Balance, account2.Balance)
+ 
 
 	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
 	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
