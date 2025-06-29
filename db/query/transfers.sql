@@ -14,6 +14,11 @@ RETURNING *;
 SELECT * FROM transfers
 WHERE id = $1 LIMIT 1;
 
+-- name: GetTransferForUpdate :one
+SELECT * FROM transfers
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
 -- name: ListTransfers :many
 SELECT * FROM transfers
 ORDER BY id

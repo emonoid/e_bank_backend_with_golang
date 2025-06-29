@@ -85,6 +85,25 @@ func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 	return i, err
 }
 
+const getTransferForUpdate = `-- name: GetTransferForUpdate :one
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE
+`
+
+func (q *Queries) GetTransferForUpdate(ctx context.Context, id int64) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, getTransferForUpdate, id)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listTransfers = `-- name: ListTransfers :many
 SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 ORDER BY id

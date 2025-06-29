@@ -13,6 +13,11 @@ RETURNING *;
 SELECT * FROM entries
 WHERE id = $1 LIMIT 1;
 
+-- name: GetEntryForUpdate :one
+SELECT * FROM entries
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
 -- name: ListEntry :many
 SELECT * FROM entries
 ORDER BY id

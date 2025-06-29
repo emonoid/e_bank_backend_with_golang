@@ -75,6 +75,24 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
 	return i, err
 }
 
+const getEntryForUpdate = `-- name: GetEntryForUpdate :one
+SELECT id, account_id, amount, created_at FROM entries
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE
+`
+
+func (q *Queries) GetEntryForUpdate(ctx context.Context, id int64) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, getEntryForUpdate, id)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listEntry = `-- name: ListEntry :many
 SELECT id, account_id, amount, created_at FROM entries
 ORDER BY id

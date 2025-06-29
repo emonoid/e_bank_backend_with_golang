@@ -17,7 +17,7 @@ func createTestAccount(t *testing.T) Account {
 
 	arg := CreateAccountParams{ 
 		OwnerName: "Al Sahriar",
-		Balance:   12300000,
+		Balance:   500,
 		Currency:  "BDT", 
 	}
 
@@ -55,7 +55,7 @@ func TestUpdateAccount(t *testing.T) {
 	arg := UpdateAccountParams{ 
 		ID: account1.ID,
 		OwnerName: "Updated Owner",
-		Balance:   15000000,
+		Balance:   500,
 		Currency:  "USD",
 	}
 

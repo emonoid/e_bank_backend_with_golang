@@ -68,11 +68,14 @@ func (store *Store) TransferTrxn(ctx context.Context, arg TransferTrxnParams) (T
 
 	err := store.execTrxn(ctx, func(q *Queries) error {
 		var err error
+
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID, ToAccountID: arg.ToAccountID, Amount: arg.Amount})
 
 		if err != nil {
 			return err
+		} else {
+			fmt.Println("------------ transfer created ")
 		}
 
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
@@ -82,6 +85,8 @@ func (store *Store) TransferTrxn(ctx context.Context, arg TransferTrxnParams) (T
 
 		if err != nil {
 			return err
+		} else {
+			fmt.Println("------------ from entry created ")
 		}
 
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
@@ -90,9 +95,27 @@ func (store *Store) TransferTrxn(ctx context.Context, arg TransferTrxnParams) (T
 		})
 		if err != nil {
 			return err
+		} else {
+			fmt.Println("------------ to entry created ")
 		}
 
-		// TODO: update account balances
+		// update account balances
+		 
+		result.FromAccount, err = q.AddBalance(ctx, AddBalanceParams{
+			ID:      arg.FromAccountID,
+			Amount: -arg.Amount /* negative amount for debit/deduction */,
+			})
+		if err != nil {
+			return err
+		}
+
+	 
+		result.ToAccount, err = q.AddBalance(ctx, AddBalanceParams{
+			ID:      arg.ToAccountID,
+			Amount: arg.Amount})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
