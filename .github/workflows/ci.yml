@@ -23,7 +23,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
-          POSTGRES_DB: islamibank
+          POSTGRES_DB: islami_bank
         
         ports:
           - "5454:5432"
