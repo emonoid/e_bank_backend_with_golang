@@ -18,12 +18,16 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres16
+        image: postgres:16
         # Provide the password for postgres
+        restart: always
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
           POSTGRES_DB: islamibank
+        
+        ports:
+          - "5454:5432"
 
         # Set health checks to wait until postgres has started
         options: >-
