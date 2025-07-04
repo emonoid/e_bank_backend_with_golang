@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const addBalance = `-- name: AddBalance :one
@@ -36,14 +35,12 @@ func (q *Queries) AddBalance(ctx context.Context, arg AddBalanceParams) (Account
 }
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (
-  -- id,
+INSERT INTO accounts ( 
   owner_name,
   balance,
-  currency,
-  created_at
+  currency
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3
 )
 RETURNING id, owner_name, balance, currency, created_at
 `
@@ -52,16 +49,10 @@ type CreateAccountParams struct {
 	OwnerName string
 	Balance   int64
 	Currency  string
-	CreatedAt time.Time
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, createAccount,
-		arg.OwnerName,
-		arg.Balance,
-		arg.Currency,
-		arg.CreatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createAccount, arg.OwnerName, arg.Balance, arg.Currency)
 	var i Account
 	err := row.Scan(
 		&i.ID,
