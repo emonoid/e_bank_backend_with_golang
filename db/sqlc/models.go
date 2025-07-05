@@ -10,7 +10,7 @@ import (
 
 type Account struct {
 	ID        int64
-	OwnerName string
+	Owner     string
 	Balance   int64
 	Currency  string
 	CreatedAt time.Time
@@ -31,4 +31,13 @@ type Transfer struct {
 	// must be positive
 	Amount    int64
 	CreatedAt time.Time
+}
+
+type User struct {
+	Username          string
+	HashedPassword    string
+	FullName          string
+	Email             string
+	PasswordChangedAt time.Time
+	CreatedAt         time.Time
 }

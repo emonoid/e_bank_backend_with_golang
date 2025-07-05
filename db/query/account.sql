@@ -1,6 +1,6 @@
 -- name: CreateAccount :one
 INSERT INTO accounts ( 
-  owner_name,
+  owner,
   balance,
   currency
 ) VALUES (
@@ -24,7 +24,7 @@ LIMIT $1 OFFSET $2;
 
 -- name: UpdateAccount :one
 UPDATE accounts
-  set owner_name = $2,
+  set owner = $2,
   balance = $3,
   currency = $4
 WHERE id = $1

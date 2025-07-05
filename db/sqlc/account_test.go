@@ -3,20 +3,28 @@ package db
 import (
 	"context"
 	"testing"
-	"time"  
+	// "time"  
 
-	"github.com/jackc/pgx/v5/pgtype"
+	// "github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
 
 func createTestAccount(t *testing.T) Account {
+	userArg := CreateUserParams{ 
+		 Username: "emonoid",
+		 HashedPassword: "secret",
+		 FullName: "Al Sahriar",
+		 Email: "emon@gmail.com",
+	}
+   user, err := testQueries.CreateUser(context.Background(), userArg)
+   require.NoError(t, err)
 
-	createdAt := pgtype.Timestamptz{}
-	_ = createdAt.Scan(time.Now())
+	// createdAt := pgtype.Timestamptz{}
+	// _ = createdAt.Scan(time.Now())
 
 	arg := CreateAccountParams{ 
-		OwnerName: "Al Sahriar",
+		Owner: user.Username,
 		Balance:   500,
 		Currency:  "BDT", 
 	}
@@ -24,7 +32,7 @@ func createTestAccount(t *testing.T) Account {
 	account, err := testQueries.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
-	require.Equal(t, arg.OwnerName, account.OwnerName)
+	require.Equal(t, arg.Owner, account.Owner)
 	require.Equal(t, arg.Balance, account.Balance)
 	require.Equal(t, arg.Currency, account.Currency)
 	// require.NotZero(t, account.ID)
@@ -44,7 +52,7 @@ func TestGetAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 	require.Equal(t, account1.ID, account2.ID)
-	require.Equal(t, account1.OwnerName, account2.OwnerName)
+	require.Equal(t, account1.Owner, account2.Owner)
 	require.Equal(t, account1.Balance, account2.Balance)
 	require.Equal(t, account1.Currency, account2.Currency)
 }
@@ -54,7 +62,7 @@ func TestUpdateAccount(t *testing.T) {
 
 	arg := UpdateAccountParams{ 
 		ID: account1.ID,
-		OwnerName: "Updated Owner",
+		Owner: "Updated Owner",
 		Balance:   500,
 		Currency:  "USD",
 	}
@@ -63,7 +71,7 @@ func TestUpdateAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 	require.Equal(t, arg.ID, account2.ID)
-	require.Equal(t, arg.OwnerName, account2.OwnerName)
+	require.Equal(t, arg.Owner, account2.Owner)
 	require.Equal(t, arg.Balance, account2.Balance)
 	require.Equal(t, arg.Currency, account2.Currency)
 }
@@ -75,7 +83,7 @@ func TestDeleteAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 	require.Equal(t, account1.ID, account2.ID)
-	require.Equal(t, account1.OwnerName, account2.OwnerName)
+	require.Equal(t, account1.Owner, account2.Owner)
 	require.Equal(t, account1.Balance, account2.Balance)
 	require.Equal(t, account1.Currency, account2.Currency)
 
@@ -96,7 +104,7 @@ func TestListAccounts(t *testing.T) {
 	require.Len(t, accounts, 3)
 
 	for _, account := range accounts {
-		require.NotEmpty(t, account.OwnerName)
+		require.NotEmpty(t, account.Owner)
 		require.NotEmpty(t, account.Balance)
 		require.NotEmpty(t, account.Currency)
 	}

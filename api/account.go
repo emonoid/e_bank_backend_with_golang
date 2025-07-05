@@ -2,15 +2,17 @@ package api
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	db "github.com/emonoid/islami_bank_go_backend/db/sqlc"
+	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createAccountRequest struct {
-	OwnerName string `json:"owner_name" binding:"required"`
+	OwnerName string `json:"owner" binding:"required"`
 	Currency  string `json:"currency" binding:"required,currency"`
 }
 
@@ -22,14 +24,24 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 
 	arg := db.CreateAccountParams{
-		OwnerName: req.OwnerName,
-		Currency:  req.Currency,
-		Balance:   0,
+		Owner:    req.OwnerName,
+		Currency: req.Currency,
+		Balance:  0,
 	}
 
 	account, err := server.store.CreateAccount(ctx, arg)
 
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			log.Println(pqErr.Code.Name())
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation":
+				ctx.JSON(http.StatusForbidden, gin.H{"error": "no user found for this account, please create an user first"})
+		    case "unique_violation":
+				ctx.JSON(http.StatusForbidden, gin.H{"error": "this user already have an account"}) 
+			}
+			return 
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -64,7 +76,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 type updateAccountRequest struct {
 	ID        int64  `json:"id" binding:"required"`
-	OwnerName string `json:"owner_name" binding:"required"`
+	OwnerName string `json:"owner" binding:"required"`
 	Currency  string `json:"currency" binding:"required,currency"`
 	Balance   int64  `json:"balance"`
 }
@@ -77,10 +89,10 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateAccountParams{
-		ID:        req.ID,
-		OwnerName: req.OwnerName,
-		Currency:  req.Currency,
-		Balance:   req.Balance,
+		ID:       req.ID,
+		Owner:    req.OwnerName,
+		Currency: req.Currency,
+		Balance:  req.Balance,
 	}
 
 	account, err := server.store.UpdateAccount(ctx, arg)
@@ -141,7 +153,7 @@ func (server *Server) deleteAccount(ctx *gin.Context) {
 	}
 
 	account, err := server.store.DeleteAccount(ctx, req.ID)
-	if err != nil { 
+	if err != nil {
 		// if err == sql.ErrNoRows {
 		// 	ctx.JSON(http.StatusNotFound, errorResponse(err))
 		// 	return
