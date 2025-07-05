@@ -6,18 +6,20 @@ import (
 
 	"github.com/emonoid/islami_bank_go_backend/api"
 	db "github.com/emonoid/islami_bank_go_backend/db/sqlc"
+	"github.com/emonoid/islami_bank_go_backend/utils"
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5454/islami_bank?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
-)
- 
+
 
 func main(){
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := utils.LoadConfig(".")
+
+	if err != nil {
+		log.Fatal("Cannot load config", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
@@ -25,7 +27,7 @@ func main(){
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("Cannot start servcer:", err)
 	}

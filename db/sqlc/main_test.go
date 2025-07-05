@@ -6,22 +6,23 @@ import (
 	"log"
 	"os"
 	"testing"
- 
 
+	"github.com/emonoid/islami_bank_go_backend/utils"
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5454/islami_bank?sslmode=disable"
-)
 
 var testQueries *Queries
 var testConn *sql.DB
 
 func TestMain(m *testing.M){ 
+    config, loadErr := utils.LoadConfig("../..")
+	if loadErr != nil{
+		log.Fatal("Cannot load config file", loadErr)
+	}
+
 	var err error
-	testConn, err = sql.Open(dbDriver, dbSource)
+	testConn, err = sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
