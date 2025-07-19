@@ -8,39 +8,40 @@ import (
 )
 
 type Server struct {
-	store *db.Store
+	store  *db.Store
 	router *gin.Engine
 }
 
-func NewServer (store *db.Store) *Server {
+func NewServer(store *db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
-  if v, ok:= binding.Validator.Engine().(*validator.Validate); ok {
-    v.RegisterValidation("currency", validateCurrency)
-  }
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validateCurrency)
+	}
 
-   // accounts routes
-   router.POST("/accounts", server.createAccount)
-   router.GET("/accounts/:id", server.getAccount)
-   router.GET("/accounts", server.getAllAccounts) 
-   router.PUT("accounts/update", server.updateAccount)
-   router.DELETE("accounts/delete/:id", server.deleteAccount)
+	//user routes
+	router.POST("/users", server.createUser)
+	router.GET("/users/:username", server.getUser)
 
-    // transfers routes
-   router.POST("/transfer", server.transferBalance)
+	// account routes
+	router.POST("/accounts", server.createAccount)
+	router.GET("/accounts/:id", server.getAccount)
+	router.GET("/accounts", server.getAllAccounts)
+	router.PUT("accounts/update", server.updateAccount)
+	router.DELETE("accounts/delete/:id", server.deleteAccount)
 
+	// transfer money routes
+	router.POST("/transfer", server.transferBalance)
 
-   server.router = router
-   return server	
+	server.router = router
+	return server
 }
-
 
 func (server *Server) Start(address string) error {
-  return  server.router.Run(address)
+	return server.router.Run(address)
 }
 
-
 func errorResponse(err error) gin.H {
-	return  gin.H{"error": err.Error()}
+	return gin.H{"error": err.Error()}
 }
