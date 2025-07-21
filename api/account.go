@@ -1,11 +1,13 @@
 package api
 
 import (
-	"database/sql"
+	"database/sql" 
+	"fmt"
 	"log"
 	"net/http"
 
 	db "github.com/emonoid/islami_bank_go_backend/db/sqlc"
+	"github.com/emonoid/islami_bank_go_backend/token"
 	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +25,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	protectedPayload := ctx.MustGet(authorizationPayloadkey).(*token.Payload)
+
 	arg := db.CreateAccountParams{
-		Owner:    req.OwnerName,
+		Owner:    protectedPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -67,6 +71,14 @@ func (server *Server) getAccount(ctx *gin.Context) {
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	protectedPayload := ctx.MustGet(authorizationPayloadkey).(*token.Payload)
+
+	if protectedPayload.Username != account.Owner {
+		err := fmt.Errorf("this account doesn't belongs to the user %s", protectedPayload.Username)
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
@@ -117,7 +129,10 @@ func (server *Server) getAllAccounts(ctx *gin.Context) {
 		return
 	}
 
+	protectedPayload := ctx.MustGet(authorizationPayloadkey).(*token.Payload)
+
 	arg := db.ListAccountsParams{
+		Owner:  protectedPayload.Username,
 		Limit:  req.PerPage,
 		Offset: (req.PageNumber - 1) * req.PerPage,
 	}
