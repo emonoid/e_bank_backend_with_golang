@@ -1,7 +1,8 @@
 package api
 
 import (
-	"database/sql" 
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -29,18 +30,18 @@ func (server *Server) transferBalance(ctx *gin.Context) {
 
 	account, valid := server.validateAccount(ctx, req.FromAccountID, req.Currency)
 	if !valid {
+		err := errors.New("from account not found")
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	if account.Owner != protectedPayload.Username {
-		err := fmt.Errorf("from account doesn't belongs to you")
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	if account.Owner != protectedPayload.Username { 
 		return
 	}
 
 	_, valid = server.validateAccount(ctx, req.ToAccountID, req.Currency)
 
-	if !valid {
+	if !valid { 
 		return
 	}
 
@@ -64,7 +65,7 @@ func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currenc
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, err)
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return account, false
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
