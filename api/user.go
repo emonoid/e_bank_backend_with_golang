@@ -19,10 +19,18 @@ type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
-type createUserResponse struct {
+type userResponse struct {
 	UserName string `json:"username"`
 	FullName string `json:"fullname"`
 	Email    string `json:"email"`
+}
+
+func newUserResponse(user db.User) userResponse {
+	return userResponse{
+		UserName: user.Username,
+		FullName: user.FullName,
+		Email:    user.Email,
+	}
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -60,11 +68,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	userResponse := createUserResponse{
-		UserName: user.Username,
-		FullName: user.FullName,
-		Email: user.Email,
-	}
+	userResponse := newUserResponse(user)
 
 	ctx.JSON(http.StatusOK, userResponse)
 }
@@ -91,6 +95,52 @@ func (server *Server) getUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
+
+}
+
+type logineUserRequest struct {
+	UserName string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req logineUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.UserName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	err = utils.CheckPassword(req.Password, user.HashedPassword)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	rsp := loginUserResponse{
+		AccessToken: accessToken,
+		User:        newUserResponse(user),
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 
 }
 
