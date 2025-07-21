@@ -11,10 +11,10 @@ import (
 )
 
 type transferRequest struct {
-	FromAccountID int64 `json:"from_account_id" binding:"required,min=1"`
-	ToAccountID int64 `json:"to_account_id" binding:"required,min=1"`
-    Amount int64       `json:"amount" binding:"required,gt=0"`
-	Currency  string `json:"currency" binding:"required,currency"`
+	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"`
+	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`
+	Amount        int64  `json:"amount" binding:"required,gt=0"`
+	Currency      string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) transferBalance(ctx *gin.Context) {
@@ -24,18 +24,18 @@ func (server *Server) transferBalance(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validateAccount(ctx, req.FromAccountID, req.Currency) { 
+	if !server.validateAccount(ctx, req.FromAccountID, req.Currency) {
 		return
 	}
 
-	if !server.validateAccount(ctx, req.ToAccountID, req.Currency){
+	if !server.validateAccount(ctx, req.ToAccountID, req.Currency) {
 		return
 	}
 
 	arg := db.TransferTrxnParams{
 		FromAccountID: req.FromAccountID,
-		ToAccountID:  req.ToAccountID,
-		Amount:   req.Amount,
+		ToAccountID:   req.ToAccountID,
+		Amount:        req.Amount,
 	}
 
 	result, err := server.store.TransferTrxn(ctx, arg)
@@ -62,8 +62,8 @@ func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currenc
 	if account.Currency != currency {
 		err := fmt.Errorf("currency doesn't match account [%d] and currency [%s] == [%s]", accountID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return  false
+		return false
 	}
- 
+
 	return true
 }

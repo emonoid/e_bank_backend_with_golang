@@ -37,10 +37,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 			switch pqErr.Code.Name() {
 			case "foreign_key_violation":
 				ctx.JSON(http.StatusForbidden, gin.H{"error": "no user found for this account, please create an user first"})
-		    case "unique_violation":
-				ctx.JSON(http.StatusForbidden, gin.H{"error": "this user already have an account"}) 
+			case "unique_violation":
+				ctx.JSON(http.StatusForbidden, gin.H{"error": "this user already have an account"})
 			}
-			return 
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
