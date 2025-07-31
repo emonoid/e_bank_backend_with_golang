@@ -8,68 +8,82 @@ import (
 	"github.com/google/uuid"
 )
 
+// Different types of error returned by the VerifyToken function
+var (
+	ErrInvalidToken = errors.New("token is invalid")
+	ErrExpiredToken = errors.New("token has expired")
+)
+
+type TokenType byte
+
+const (
+	TokenTypeAccessToken  = 1
+	TokenTypeRefreshToken = 2
+)
+
+// Payload contains the payload data of the token
 type Payload struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	IssuedAt time.Time `json:"issued_at"`
-	ExpireAt time.Time `json:"expired_at"`
+	ID        uuid.UUID `json:"id"`
+	Type      TokenType `json:"token_type"`
+	Username  string    `json:"username"`
+	IssuedAt  time.Time `json:"issued_at"`
+	ExpiredAt time.Time `json:"expired_at"`
 }
 
-// GetAudience implements jwt.Claims.
-func (payload *Payload) GetAudience() (jwt.ClaimStrings, error) {
-	panic("unimplemented")
-}
-
-// GetExpirationTime implements jwt.Claims.
-func (payload *Payload) GetExpirationTime() (*jwt.NumericDate, error) {
-	panic("unimplemented")
-}
-
-// GetIssuedAt implements jwt.Claims.
-func (payload *Payload) GetIssuedAt() (*jwt.NumericDate, error) {
-	panic("unimplemented")
-}
-
-// GetIssuer implements jwt.Claims.
-func (payload *Payload) GetIssuer() (string, error) {
-	panic("unimplemented")
-}
-
-// GetNotBefore implements jwt.Claims.
-func (payload *Payload) GetNotBefore() (*jwt.NumericDate, error) {
-	panic("unimplemented")
-}
-
-// GetSubject implements jwt.Claims.
-func (payload *Payload) GetSubject() (string, error) {
-	panic("unimplemented")
-}
-
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+// NewPayload creates a new token payload with a specific username and duration
+func NewPayload(username string, duration time.Duration, tokenType TokenType) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 
 	payload := &Payload{
-		ID:       tokenID,
-		Username: username,
-		IssuedAt: time.Now(),
-		ExpireAt: time.Now().Add(duration),
+		ID:        tokenID,
+		Type:      tokenType,
+		Username:  username,
+		IssuedAt:  time.Now(),
+		ExpiredAt: time.Now().Add(duration),
 	}
-
 	return payload, nil
 }
 
-var (
-	ErrExpiredToken = errors.New("token has expired")
-	ErrInvalidToken = errors.New("token is invalid")
-)
-
-func (payload *Payload) Valid() error {
-	if time.Now().After(payload.ExpireAt) {
+// Valid checks if the token payload is valid or not
+func (payload *Payload) Valid(tokenType TokenType) error {
+	if payload.Type != tokenType {
+		return ErrInvalidToken
+	}
+	if time.Now().After(payload.ExpiredAt) {
 		return ErrExpiredToken
 	}
-
 	return nil
+}
+
+func (payload *Payload) GetExpirationTime() (*jwt.NumericDate, error) {
+	return &jwt.NumericDate{
+		Time: payload.ExpiredAt,
+	}, nil
+}
+
+func (payload *Payload) GetIssuedAt() (*jwt.NumericDate, error) {
+	return &jwt.NumericDate{
+		Time: payload.IssuedAt,
+	}, nil
+}
+
+func (payload *Payload) GetNotBefore() (*jwt.NumericDate, error) {
+	return &jwt.NumericDate{
+		Time: payload.IssuedAt,
+	}, nil
+}
+
+func (payload *Payload) GetIssuer() (string, error) {
+	return "", nil
+}
+
+func (payload *Payload) GetSubject() (string, error) {
+	return "", nil
+}
+
+func (payload *Payload) GetAudience() (jwt.ClaimStrings, error) {
+	return jwt.ClaimStrings{}, nil
 }

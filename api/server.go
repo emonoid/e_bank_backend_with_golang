@@ -18,9 +18,8 @@ type Server struct {
 	config     utils.Config
 }
 
-func NewServer(config utils.Config, store *db.Store) (*Server, error) {
-
-	tokenMaker, err := token.NewPasetoMaker([]byte(config.TokenSymmetricKey))
+func NewServer(config utils.Config, store *db.Store) (*Server, error) { 
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	// tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 
 	if err != nil {
@@ -45,6 +44,7 @@ func (server *Server) setupRouters() {
 	router.POST("/users", server.createUser)
 	router.GET("/users/:username", server.getUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/token/refresh", server.renewAccessToken)
 
 	protectedRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 

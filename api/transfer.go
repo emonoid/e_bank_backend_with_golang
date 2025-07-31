@@ -26,7 +26,7 @@ func (server *Server) transferBalance(ctx *gin.Context) {
 		return
 	}
 
-	protectedPayload := ctx.MustGet(authorizationPayloadkey).(*token.Payload)
+	protectedPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	account, valid := server.validateAccount(ctx, req.FromAccountID, req.Currency)
 	if !valid {
